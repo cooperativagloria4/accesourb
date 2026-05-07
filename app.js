@@ -242,7 +242,18 @@ async function procesarDNI(persona) {
         if (!querySnapshot.empty) {
             const docRef = querySnapshot.docs[0];
             const data = docRef.data();
-            await logsCol.add({ dni: data.dni || 'S/N', nombre: data.nombre || nombreCompleto, tipo: 'SALIDA', fecha: firebase.firestore.FieldValue.serverTimestamp(), duracion_estadia: calcularEstadia(data.hora_entrada), es_manual: data.es_manual || false });
+            
+            // Guardar salida con referencia a la hora de entrada original para permitir anulaciones
+            await logsCol.add({ 
+                dni: data.dni || 'S/N', 
+                nombre: data.nombre || nombreCompleto, 
+                tipo: 'SALIDA', 
+                fecha: firebase.firestore.FieldValue.serverTimestamp(), 
+                hora_entrada_original: data.hora_entrada || null,
+                duracion_estadia: calcularEstadia(data.hora_entrada), 
+                es_manual: data.es_manual || false 
+            });
+            
             await insideCol.doc(docRef.id).delete();
             showStatus(`SALIDA: ${data.nombre || dni}`, 'orange');
             playBeep(440, 200);

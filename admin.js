@@ -198,10 +198,32 @@ window.borrarPersonaAdentro = function(docId) {
 };
 
 window.borrarLog = function(docId) {
-    if (confirm('¿Desea eliminar este registro permanentemente?')) {
-        logsCol.doc(docId).delete().catch(function(error) {
-            console.error(error);
-            alert("Error al borrar log.");
+    if (confirm('¿Desea eliminar este registro? Si elimina una SALIDA, la persona volverá a aparecer en la lista de PRESENTES.')) {
+        // 1. Obtener los datos del log antes de borrarlo
+        logsCol.doc(docId).get().then(function(docSnap) {
+            if (!docSnap.exists) return;
+            const data = docSnap.data();
+
+            // 2. Si es una SALIDA, restaurar a la persona en "personas_adentro"
+            if (data.tipo === 'SALIDA') {
+                const idUnico = data.dni && data.dni !== 'S/N' ? data.dni : `MAN-${Date.now()}`;
+                
+                insideCol.doc(idUnico).set({
+                    dni: data.dni || 'S/N',
+                    nombre: data.nombre,
+                    hora_entrada: data.hora_entrada_original || firebase.firestore.FieldValue.serverTimestamp(),
+                    es_manual: data.es_manual || false,
+                    observacion: 'Salida anulada por Admin'
+                }).then(function() {
+                    console.log("Persona restaurada en presentes.");
+                });
+            }
+
+            // 3. Borrar el registro del historial
+            return logsCol.doc(docId).delete();
+        }).catch(function(error) {
+            console.error("Error al anular registro:", error);
+            alert("Error al procesar la anulación.");
         });
     }
 };
