@@ -247,10 +247,30 @@ async function procesarDNI(persona) {
             showStatus(`SALIDA: ${data.nombre || dni}`, 'orange');
             playBeep(440, 200);
         } else {
-            const entryData = { dni: dni || 'S/N', nombre: nombreCompleto, tipo: 'ENTRADA', fecha: firebase.firestore.FieldValue.serverTimestamp(), es_manual: !dni };
+            // --- ENTRADA ---
+            const entryData = { 
+                dni: dni || 'S/N', 
+                nombre: nombreCompleto, 
+                tipo: 'ENTRADA', 
+                fecha: firebase.firestore.FieldValue.serverTimestamp(), 
+                es_manual: !dni 
+            };
             if (observacion) entryData.observacion = observacion;
-            await logsCol.add(entryData);
-            await insideCol.doc(idUnico).set({ dni: dni || 'S/N', nombre: nombreCompleto, hora_entrada: firebase.firestore.FieldValue.serverTimestamp(), es_manual: !dni, observacion: observacion || '' });
+            
+            console.log("Registrando entrada para:", nombreCompleto);
+            
+            // Usar una transacción o promesas paralelas para asegurar ambos registros
+            await Promise.all([
+                logsCol.add(entryData),
+                insideCol.doc(idUnico).set({ 
+                    dni: dni || 'S/N', 
+                    nombre: nombreCompleto, 
+                    hora_entrada: firebase.firestore.FieldValue.serverTimestamp(), 
+                    es_manual: !dni, 
+                    observacion: observacion || '' 
+                })
+            ]);
+
             showStatus(`ENTRADA: ${nombreCompleto}`, 'green');
             playBeep(880, 150);
         }
