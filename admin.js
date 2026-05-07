@@ -114,6 +114,9 @@ logsCol.where("fecha", ">=", primerDiaMes)
        .onSnapshot(function(snapshot) {
     console.log("Admin: Actualización en historial mensual.");
     adminFullLogs.innerHTML = '';
+    const printTableBody = document.getElementById('printTableBody');
+    if (printTableBody) printTableBody.innerHTML = '';
+    
     let entriesToday = 0;
     let exitsToday = 0;
     const fechaHoy = new Date();
@@ -124,6 +127,7 @@ logsCol.where("fecha", ">=", primerDiaMes)
         return;
     }
 
+    let i = 1;
     snapshot.forEach(function(docSnap) {
         const data = docSnap.data();
         const fecha = data.fecha ? data.fecha.toDate() : null;
@@ -133,6 +137,7 @@ logsCol.where("fecha", ">=", primerDiaMes)
             else exitsToday++;
         }
 
+        // Llenar tabla visual
         const row = document.createElement('tr');
         const fechaHora = fecha ? fecha.toLocaleString([], {day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit'}) : '...';
         const badgeColor = data.tipo === 'ENTRADA' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700';
@@ -154,6 +159,21 @@ logsCol.where("fecha", ">=", primerDiaMes)
             </td>
         `;
         adminFullLogs.appendChild(row);
+
+        // Llenar tabla de impresión (oculta)
+        if (printTableBody) {
+            const printRow = document.createElement('tr');
+            const fullFechaHora = fecha ? fecha.toLocaleString([], {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : '...';
+            printRow.innerHTML = `
+                <td class="border p-2">${i++}</td>
+                <td class="border p-2">${fullFechaHora}</td>
+                <td class="border p-2"><strong>${data.tipo}</strong></td>
+                <td class="border p-2">${data.nombre || 'S/N'}</td>
+                <td class="border p-2">${data.dni || 'S/N'}</td>
+                <td class="border p-2">${data.observacion || '-'}</td>
+            `;
+            printTableBody.appendChild(printRow);
+        }
     });
 
     statTodayEntries.innerText = entriesToday;
@@ -233,46 +253,20 @@ window.borrarLog = function(docId) {
 };
 
 window.imprimirHistorial = function() {
-    const printTableBody = document.getElementById('printTableBody');
     const printMonthLabel = document.getElementById('printMonthLabel');
     const nombreMes = hoy.toLocaleString('es', { month: 'long' });
     
-    printMonthLabel.innerText = `Reporte Mensual: ${nombreMes.toUpperCase()} ${hoy.getFullYear()}`;
-    printTableBody.innerHTML = '';
+    if (printMonthLabel) {
+        printMonthLabel.innerText = `Reporte Mensual: ${nombreMes.toUpperCase()} ${hoy.getFullYear()}`;
+    }
 
-    // Obtener los datos actuales del historial filtrado por mes
-    logsCol.where("fecha", ">=", primerDiaMes)
-           .where("fecha", "<=", ultimoDiaMes)
-           .orderBy("fecha", "desc")
-           .get()
-           .then(function(snapshot) {
-        if (snapshot.empty) {
-            alert("No hay registros para imprimir en este mes.");
-            return;
-        }
+    // Verificar si hay datos cargados
+    const printTableBody = document.getElementById('printTableBody');
+    if (!printTableBody || printTableBody.children.length === 0) {
+        alert("No hay registros cargados para imprimir en este mes.");
+        return;
+    }
 
-        let i = 1;
-        snapshot.forEach(function(doc) {
-            const data = doc.data();
-            const fecha = data.fecha ? data.fecha.toDate() : null;
-            const fechaHora = fecha ? fecha.toLocaleString([], {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : '...';
-            
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="border p-2">${i++}</td>
-                <td class="border p-2">${fechaHora}</td>
-                <td class="border p-2"><strong>${data.tipo}</strong></td>
-                <td class="border p-2">${data.nombre || 'S/N'}</td>
-                <td class="border p-2">${data.dni || 'S/N'}</td>
-                <td class="border p-2">${data.observacion || '-'}</td>
-            `;
-            printTableBody.appendChild(row);
-        });
-
-        // Disparar la impresión
-        window.print();
-    }).catch(function(error) {
-        console.error("Error al generar reporte:", error);
-        alert("Error al generar el reporte de impresión.");
-    });
+    // Disparar la impresión directamente ya que la tabla se llena en tiempo real
+    window.print();
 };
