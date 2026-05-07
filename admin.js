@@ -89,7 +89,10 @@ insideCol.onSnapshot(function(snapshot) {
         }
         
         row.innerHTML = `
-            <td class="p-4 font-medium text-gray-900">${data.nombre || 'S/N'}</td>
+            <td class="p-4">
+                <div class="font-medium text-gray-900">${data.nombre || 'S/N'}</div>
+                ${data.observacion ? `<div class="text-[10px] text-orange-600 italic">Obs: ${data.observacion}</div>` : ''}
+            </td>
             <td class="p-4 text-gray-500">${data.dni}</td>
             <td class="p-4 text-gray-500">${hora}</td>
             <td class="p-4 text-center">
@@ -142,6 +145,7 @@ logsCol.where("fecha", ">=", primerDiaMes)
             <td class="p-4 font-medium">
                 ${data.nombre || 'S/N'}
                 <div class="text-[10px] text-gray-400 font-normal">DNI: ${data.dni}</div>
+                ${data.observacion ? `<div class="text-[10px] text-orange-500 italic font-normal">Motivo: ${data.observacion}</div>` : ''}
             </td>
             <td class="p-4 text-center">
                 <button onclick="borrarLog('${docSnap.id}')" class="text-gray-300 hover:text-red-500 p-2">
