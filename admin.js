@@ -71,6 +71,7 @@ if (currentMonthDisplay) {
 
 // 1. Personas Adentro
 insideCol.onSnapshot(function(snapshot) {
+    console.log("Admin: Actualización en 'personas_adentro'.");
     adminInsideList.innerHTML = '';
     statInside.innerText = snapshot.size;
 
@@ -82,7 +83,10 @@ insideCol.onSnapshot(function(snapshot) {
     snapshot.forEach(function(docSnap) {
         const data = docSnap.data();
         const row = document.createElement('tr');
-        const hora = data.hora_entrada ? data.hora_entrada.toDate().toLocaleTimeString() : '...';
+        let hora = "...";
+        if (data.hora_entrada) {
+            try { hora = data.hora_entrada.toDate().toLocaleTimeString(); } catch(e) {}
+        }
         
         row.innerHTML = `
             <td class="p-4 font-medium text-gray-900">${data.nombre || 'S/N'}</td>
@@ -96,6 +100,8 @@ insideCol.onSnapshot(function(snapshot) {
         `;
         adminInsideList.appendChild(row);
     });
+}, function(error) {
+    console.error("Admin: Error en listener de personas_adentro:", error);
 });
 
 // 2. Historial Mensual
@@ -103,6 +109,7 @@ logsCol.where("fecha", ">=", primerDiaMes)
        .where("fecha", "<=", ultimoDiaMes)
        .orderBy("fecha", "desc")
        .onSnapshot(function(snapshot) {
+    console.log("Admin: Actualización en historial mensual.");
     adminFullLogs.innerHTML = '';
     let entriesToday = 0;
     let exitsToday = 0;
@@ -147,6 +154,11 @@ logsCol.where("fecha", ">=", primerDiaMes)
 
     statTodayEntries.innerText = entriesToday;
     statTodayExits.innerText = exitsToday;
+}, function(error) {
+    console.error("Admin: Error en listener de historial mensual:", error);
+    if (error.code === 'failed-precondition') {
+        adminFullLogs.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-red-500">Error: Falta crear el índice en Firestore. Revise la consola.</td></tr>';
+    }
 });
 
 // --- FUNCIONES DE GESTIÓN ---

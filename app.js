@@ -119,7 +119,11 @@ if (formNoDni) {
 // --- ESCUCHA DE DATOS ---
 
 function iniciarEscucha() {
+    console.log("Iniciando escucha de datos en tiempo real...");
+
+    // 1. Escuchar personas adentro
     insideCol.onSnapshot(function(snapshot) {
+        console.log("Actualización en 'personas_adentro'. Total:", snapshot.size);
         insideList.innerHTML = '';
         insideListMobile.innerHTML = '';
         countInside.innerText = snapshot.size;
@@ -133,7 +137,13 @@ function iniciarEscucha() {
 
         snapshot.forEach(function(doc) {
             const data = doc.data();
-            const hora = data.hora_entrada ? data.hora_entrada.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...';
+            // Manejar timestamp de forma segura (puede ser null un instante mientras se sincroniza)
+            let hora = "...";
+            if (data.hora_entrada) {
+                try {
+                    hora = data.hora_entrada.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                } catch(e) { console.log("Esperando sincronización de hora..."); }
+            }
             const nombreDisplay = data.nombre || 'S/N';
 
             const row = document.createElement('tr');
@@ -157,23 +167,50 @@ function iniciarEscucha() {
             `;
             insideListMobile.appendChild(card);
         });
+    }, function(error) {
+        console.error("Error en listener de personas_adentro:", error);
     });
 
-    logsCol.orderBy("fecha", "desc").limit(5).onSnapshot(function(snapshot) {
+    // 2. Escuchar historial reciente y contar totales de hoy
+    const hoyInicio = new Date();
+    hoyInicio.setHours(0,0,0,0);
+
+    logsCol.orderBy("fecha", "desc").onSnapshot(function(snapshot) {
+        console.log("Actualización en historial.");
         recentLogs.innerHTML = '';
+        let totalHoy = 0;
+
         snapshot.forEach(function(doc) {
             const data = doc.data();
-            const item = document.createElement('div');
-            const hora = data.fecha ? data.fecha.toDate().toLocaleTimeString() : '...';
-            const color = data.tipo === 'ENTRADA' ? 'text-green-600' : 'text-orange-600';
-            const icon = data.tipo === 'ENTRADA' ? '→' : '←';
-            item.className = 'flex justify-between items-center p-2 bg-gray-50 rounded text-sm';
-            item.innerHTML = `
-                <span><strong class="${color}">${icon} ${data.tipo}</strong>: ${data.nombre || data.dni}</span>
-                <span class="text-gray-400">${hora}</span>
-            `;
-            recentLogs.appendChild(item);
+            const fecha = data.fecha ? data.fecha.toDate() : null;
+
+            // Contar si es entrada de hoy
+            if (fecha && fecha >= hoyInicio && data.tipo === 'ENTRADA') {
+                totalHoy++;
+            }
+
+            // Mostrar solo los últimos 5 en la lista visual
+            if (recentLogs.children.length < 5) {
+                const item = document.createElement('div');
+                const horaStr = fecha ? fecha.toLocaleTimeString() : '...';
+                const color = data.tipo === 'ENTRADA' ? 'text-green-600' : 'text-orange-600';
+                const icon = data.tipo === 'ENTRADA' ? '→' : '←';
+                item.className = 'flex justify-between items-center p-2 bg-gray-50 rounded text-sm';
+                item.innerHTML = `
+                    <span><strong class="${color}">${icon} ${data.tipo}</strong>: ${data.nombre || data.dni}</span>
+                    <span class="text-gray-400">${horaStr}</span>
+                `;
+                recentLogs.appendChild(item);
+            }
         });
+
+        countTotal.innerText = totalHoy;
+    }, function(error) {
+        console.error("Error en listener de historial:", error);
+        // Si falla por falta de índice, mostrar mensaje útil
+        if (error.code === 'failed-precondition') {
+            console.warn("Falta crear un índice en Firestore para ordenar por fecha.");
+        }
     });
 }
 
