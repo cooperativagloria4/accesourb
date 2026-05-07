@@ -197,8 +197,11 @@ function iniciarEscucha() {
                 const icon = data.tipo === 'ENTRADA' ? '→' : '←';
                 item.className = 'flex justify-between items-center p-2 bg-gray-50 rounded text-sm';
                 item.innerHTML = `
-                    <span><strong class="${color}">${icon} ${data.tipo}</strong>: ${data.nombre || data.dni}</span>
-                    <span class="text-gray-400">${horaStr}</span>
+                    <div class="flex flex-col">
+                        <span><strong class="${color}">${icon} ${data.tipo}</strong>: ${data.nombre || 'S/N'}</span>
+                        <span class="text-[10px] text-gray-400">DNI: ${data.dni || 'S/N'}</span>
+                    </div>
+                    <span class="text-gray-400 text-xs">${horaStr}</span>
                 `;
                 recentLogs.appendChild(item);
             }
