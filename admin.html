@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Sistema de Acceso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans">
+    <nav class="bg-blue-600 text-white shadow-lg p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Admin Dashboard - Urbanización</h1>
+            <div class="flex items-center space-x-4">
+                <a href="index.html" class="text-sm hover:underline">Vista Vigilante</a>
+                <button onclick="cerrarSesion()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded transition text-sm font-bold shadow-md">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Estadísticas Rápidas -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-sm text-gray-500 font-bold uppercase tracking-wider">Personas Adentro</p>
+                <p id="statInside" class="text-4xl font-black text-blue-600">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-sm text-gray-500 font-bold uppercase tracking-wider">Entradas Hoy</p>
+                <p id="statTodayEntries" class="text-4xl font-black text-green-600">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-sm text-gray-500 font-bold uppercase tracking-wider">Salidas Hoy</p>
+                <p id="statTodayExits" class="text-4xl font-black text-orange-600">0</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Tabla de Personas Actuales -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                    <h2 class="font-bold text-gray-700">Presentes en Tiempo Real</h2>
+                    <span class="flex h-3 w-3 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                    </span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
+                            <tr>
+                                <th class="p-4">Persona</th>
+                                <th class="p-4">DNI</th>
+                                <th class="p-4">Entrada</th>
+                                <th class="p-4 text-center">Gestión</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminInsideList" class="text-sm divide-y divide-gray-100">
+                            <!-- Dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Historial Mensual -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-4 border-b border-gray-100 bg-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="font-bold text-gray-700">Historial Mensual</h2>
+                        <p id="currentMonthDisplay" class="text-xs text-blue-600 font-medium uppercase tracking-tight"></p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="mantenimientoBorrarMes()" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center border border-red-200">
+                            <i class="fas fa-broom mr-2"></i> LIMPIAR MES
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-y-auto max-h-[600px]">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 text-xs text-gray-500 uppercase sticky top-0">
+                            <tr>
+                                <th class="p-4">Fecha/Hora</th>
+                                <th class="p-4">Tipo</th>
+                                <th class="p-4">Persona</th>
+                                <th class="p-4 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminFullLogs" class="text-sm divide-y divide-gray-100">
+                            <!-- Dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
