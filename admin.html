@@ -7,6 +7,18 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; }
+            .container { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            table { border-collapse: collapse !important; width: 100% !important; }
+            th, td { border: 1px solid #ddd !important; padding: 8px !important; font-size: 10pt !important; }
+            th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; }
+        }
+        .print-only { display: none; }
+    </style>
 </head>
 <body class="bg-slate-50 min-h-screen font-sans">
     <nav class="bg-blue-600 text-white shadow-lg p-4">
@@ -22,8 +34,42 @@
     </nav>
 
     <div class="container mx-auto px-4 py-8">
-        <!-- Estadísticas Rápidas -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <header class="mb-8 no-print">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold text-gray-800">Panel de Administración</h1>
+                <div class="flex space-x-3">
+                    <a href="index.html" class="bg-white hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition border">
+                        <i class="fas fa-arrow-left mr-2"></i> Volver al Escáner
+                    </a>
+                    <button onclick="cerrarSesion()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Seccion de Impresión (Oculta en pantalla) -->
+        <div id="printArea" class="print-only">
+            <h1 class="text-2xl font-bold mb-2">Reporte de Control de Acceso</h1>
+            <p id="printMonthLabel" class="mb-4 font-bold text-gray-700"></p>
+            <table class="w-full text-left">
+                <thead>
+                    <tr>
+                        <th class="border p-2">#</th>
+                        <th class="border p-2">Fecha/Hora</th>
+                        <th class="border p-2">Tipo</th>
+                        <th class="border p-2">Persona</th>
+                        <th class="border p-2">DNI</th>
+                        <th class="border p-2">Motivo/Obs</th>
+                    </tr>
+                </thead>
+                <tbody id="printTableBody">
+                    <!-- Dinámico -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 no-print">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <p class="text-sm text-gray-500 font-bold uppercase tracking-wider">Personas Adentro</p>
                 <p id="statInside" class="text-4xl font-black text-blue-600">0</p>
@@ -38,7 +84,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 no-print">
             <!-- Tabla de Personas Actuales -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
@@ -73,6 +119,9 @@
                         <p id="currentMonthDisplay" class="text-xs text-blue-600 font-medium uppercase tracking-tight"></p>
                     </div>
                     <div class="flex space-x-2">
+                        <button onclick="imprimirHistorial()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-bold transition flex items-center shadow-sm">
+                            <i class="fas fa-print mr-2"></i> IMPRIMIR
+                        </button>
                         <button onclick="mantenimientoBorrarMes()" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center border border-red-200">
                             <i class="fas fa-broom mr-2"></i> LIMPIAR MES
                         </button>

@@ -231,3 +231,48 @@ window.borrarLog = function(docId) {
         });
     }
 };
+
+window.imprimirHistorial = function() {
+    const printTableBody = document.getElementById('printTableBody');
+    const printMonthLabel = document.getElementById('printMonthLabel');
+    const nombreMes = hoy.toLocaleString('es', { month: 'long' });
+    
+    printMonthLabel.innerText = `Reporte Mensual: ${nombreMes.toUpperCase()} ${hoy.getFullYear()}`;
+    printTableBody.innerHTML = '';
+
+    // Obtener los datos actuales del historial filtrado por mes
+    logsCol.where("fecha", ">=", primerDiaMes)
+           .where("fecha", "<=", ultimoDiaMes)
+           .orderBy("fecha", "desc")
+           .get()
+           .then(function(snapshot) {
+        if (snapshot.empty) {
+            alert("No hay registros para imprimir en este mes.");
+            return;
+        }
+
+        let i = 1;
+        snapshot.forEach(function(doc) {
+            const data = doc.data();
+            const fecha = data.fecha ? data.fecha.toDate() : null;
+            const fechaHora = fecha ? fecha.toLocaleString([], {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit'}) : '...';
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="border p-2">${i++}</td>
+                <td class="border p-2">${fechaHora}</td>
+                <td class="border p-2"><strong>${data.tipo}</strong></td>
+                <td class="border p-2">${data.nombre || 'S/N'}</td>
+                <td class="border p-2">${data.dni || 'S/N'}</td>
+                <td class="border p-2">${data.observacion || '-'}</td>
+            `;
+            printTableBody.appendChild(row);
+        });
+
+        // Disparar la impresión
+        window.print();
+    }).catch(function(error) {
+        console.error("Error al generar reporte:", error);
+        alert("Error al generar el reporte de impresión.");
+    });
+};
