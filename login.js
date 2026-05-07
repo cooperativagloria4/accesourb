@@ -2,7 +2,7 @@
 
 // --- CONFIGURACIÓN DE FIREBASE ---
 const firebaseConfig = {
-    apiKey: "AIzaSyAwniFaftFR1cB0K5wWs49SxD26Ydu9-eg",
+    apiKey: "AIzaSyClx-W0EMOE5OaPutrlUklwBlIw9B36B5w",
     authDomain: "sistema-control-acceso-8fef2.firebaseapp.com",
     projectId: "sistema-control-acceso-8fef2",
     storageBucket: "sistema-control-acceso-8fef2.firebasestorage.app",
