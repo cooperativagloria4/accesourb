@@ -218,8 +218,13 @@ async function procesarDNI(persona) {
             playBeep(880, 150);
         }
     } catch (error) {
-        console.error(error);
-        showStatus("Error de conexión", "red");
+        console.error("Error detallado:", error);
+        // Mostrar mensaje más descriptivo
+        let msg = "Error de conexión";
+        if (error.code === 'permission-denied') msg = "Error: Permisos denegados (Revisa las Reglas de Firestore)";
+        if (error.code === 'not-found') msg = "Error: Colección no encontrada";
+        
+        showStatus(msg, "red");
         playBeep(220, 500);
     }
 }
