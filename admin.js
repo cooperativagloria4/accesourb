@@ -10,6 +10,12 @@ const firebaseConfig = {
     appId: "1:704959504175:web:1045aa93aa2a186f5d0bda"
 };
 
+// --- CONFIGURACIÓN DE SEGURIDAD ---
+const EMAILS_AUTORIZADOS = [
+    "miguel.sanca@ucsp.edu.pe", 
+    "otro-admin@gmail.com"
+];
+
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -19,6 +25,14 @@ const auth = firebase.auth();
 auth.onAuthStateChanged(function(user) {
     if (!user) {
         window.location.href = 'login.html';
+    } else {
+        const email = user.email.toLowerCase();
+        if (!EMAILS_AUTORIZADOS.includes(email)) {
+            console.warn("Acceso denegado para:", email);
+            auth.signOut().then(() => {
+                window.location.href = 'login.html?error=unauthorized';
+            });
+        }
     }
 });
 

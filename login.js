@@ -10,6 +10,12 @@ const firebaseConfig = {
     appId: "1:704959504175:web:1045aa93aa2a186f5d0bda"
 };
 
+// --- CONFIGURACIÓN DE SEGURIDAD ---
+const EMAILS_AUTORIZADOS = [
+    "miguel.sanca@ucsp.edu.pe", 
+    "otro-admin@gmail.com"
+];
+
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -25,9 +31,8 @@ if (googleLoginBtn) {
     googleLoginBtn.addEventListener('click', function() {
         console.log("Iniciando proceso de login...");
         
-        // Feedback visual inmediato
         googleLoginBtn.disabled = true;
-        googleLoginBtn.innerText = "Abriendo Google...";
+        googleLoginBtn.innerText = "Verificando cuenta...";
         errorMessage.classList.add('hidden');
 
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
@@ -35,8 +40,19 @@ if (googleLoginBtn) {
                 return auth.signInWithPopup(provider);
             })
             .then(function(result) {
-                console.log("Login exitoso para:", result.user.email);
-                window.location.href = 'admin.html';
+                const email = result.user.email.toLowerCase();
+                console.log("Validando correo:", email);
+
+                if (EMAILS_AUTORIZADOS.includes(email)) {
+                    console.log("Acceso concedido.");
+                    window.location.href = 'admin.html';
+                } else {
+                    console.warn("Correo no autorizado.");
+                    // Cerrar sesión inmediatamente si no está autorizado
+                    return auth.signOut().then(() => {
+                        throw { code: 'auth/unauthorized-email' };
+                    });
+                }
             })
             .catch(function(error) {
                 console.error("Error en login:", error);
@@ -48,13 +64,12 @@ if (googleLoginBtn) {
 
                 let mensaje = "Error al iniciar sesión.";
                 
-                if (error.code === 'auth/popup-blocked') {
-                    mensaje = "¡Atención! Tu navegador bloqueó la ventana de Google. Por favor, habilita las ventanas emergentes (popups) arriba a la derecha.";
-                    alert(mensaje);
-                } else if (error.code === 'auth/operation-not-allowed') {
-                    mensaje = "El inicio con Google no está habilitado en la consola de Firebase.";
+                if (error.code === 'auth/unauthorized-email') {
+                    mensaje = "Lo sentimos, este correo no tiene permisos de administrador.";
+                } else if (error.code === 'auth/popup-blocked') {
+                    mensaje = "¡Atención! Tu navegador bloqueó la ventana de Google.";
                 } else {
-                    mensaje = "Error: " + error.message;
+                    mensaje = "Error: " + (error.message || error.code);
                 }
 
                 errorMessage.innerText = mensaje;
